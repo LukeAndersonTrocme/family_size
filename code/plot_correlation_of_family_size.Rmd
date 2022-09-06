@@ -22,8 +22,29 @@ infile <- fread("/Users/luke/Documents/family_size/Saguenay_ind_relative_family_
 infile$fifty <- infile$decade - infile$decade %% 50
 infile$group <- paste0(infile$great,".",infile$grand,".","parents_",infile$fifty)
 
-
 infile
+```
+
+```{r}
+# town level correlation
+
+town_corr <-
+  infile %>%
+  group_by(t, great, grand, fifty) %>%
+  dplyr::summarise(correl = cor(focal_family_size, relative_family_size),
+                   count = n())
+
+np <-
+ggplot(town_corr, aes(x = as.factor(fifty), y = correl, color = paste0(great,".",grand,".","parent"))) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_point(size = 0.01, position = position_jitterdodge()) +
+  guides(color=guide_legend(title="Relative")) +
+  ggtitle("Eastern") +
+  labs(x="Time") +
+  theme_bw() +
+  theme(plot.title = element_text(hjust = 0.5))
+
+ggsave(np, filename = "/Users/luke/Documents/family_size/Eastern_corr_fs.jpg", height = 4, width = 7)
 ```
 
 ```{r}
@@ -60,9 +81,6 @@ ggplot(infile,
 ggsave(op, filename = "/Users/luke/Documents/family_size/Saguenay_ind_relative_family_size.jpg", height = 8, width = 12)
 ```
 
-```{r}
-
-```
 
 ```{r}
 

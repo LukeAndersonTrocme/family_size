@@ -15,6 +15,6 @@ list_of_parents <- pedigree %>% filter(ind %in% pedigree$mother | ind %in% pedig
 relative_family_size <- get_relative_family_size(pedigree, list_of_parents)
 
 # write a single massive file
-fwrite(avg_over_couple, file = "ind_relative_family_size.csv")
+fwrite(relative_family_size, file = "ind_relative_family_size.csv")
 # write separate files for each region
 relative_family_size %>% group_by(a) %>% do(fwrite(., paste0(unique(.$a), "_ind_relative_family_size.csv")))
