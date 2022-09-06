@@ -1,0 +1,73 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+```{r}
+library(dplyr)
+library(data.table)
+library(ggplot2)
+
+library(plyr) # r2 formula
+library(ggpmisc) # r2 formula on plot
+library(cowplot) # multi panel plot
+```
+
+```{r}
+infile <- fread("/Users/luke/Documents/family_size/Saguenay_ind_relative_family_size.csv") %>%
+  filter(!is.na(decade)) %>%
+  group_by(ind, focal_family_size, t, min_wts_name, decade, great, grand) %>%
+  dplyr::summarise(relative_family_size = mean(relative_family_size))
+infile$fifty <- infile$decade - infile$decade %% 50
+infile$group <- paste0(infile$great,".",infile$grand,".","parents_",infile$fifty)
+
+
+infile
+```
+
+```{r}
+lm_eqn = function(df){
+    m = lm(y ~ x, df);
+    eq <- substitute(italic(y) == a + b %.% italic(x)*","~~italic(r)^2~"="~r2, 
+         list(a = format(coef(m)[1], digits = 2), 
+              b = format(coef(m)[2], digits = 2), 
+             r2 = format(summary(m)$r.squared, digits = 3)))
+    as.character(as.expression(eq));                 
+}
+
+eq <- ddply(infile %>% dplyr::rename(x = focal_family_size, y = relative_family_size),.(group),lm_eqn)
+
+plot_df <- inner_join(eq, infile)
+
+label_df <- plot_df %>% group_by(group, V1) %>% dplyr::summarise(lab_x = 15, lab_y = 29)
+
+op <-
+ggplot(infile, 
+       aes(x = focal_family_size, y = relative_family_size)) +
+  geom_jitter(size = 0.01)+
+  geom_smooth(method = "lm", se=FALSE, color="royalblue", formula = y ~ x, size = 0.3) +
+  scale_x_continuous(limits = c(0,30))+
+  scale_y_continuous(limits = c(0,30))+
+  theme_bw() +
+  facet_wrap(.~group, scales = "free_y", labeller = as_labeller(eq, 
+                                                                default = label_parsed)) +
+  geom_text(data = label_df, aes(x = lab_x, y = lab_y, label=V1), parse = TRUE, inherit.aes=FALSE) +
+  ggtitle("Saguenay") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+
+ggsave(op, filename = "/Users/luke/Documents/family_size/Saguenay_ind_relative_family_size.jpg", height = 8, width = 12)
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```

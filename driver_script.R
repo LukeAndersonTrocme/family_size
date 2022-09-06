@@ -10,7 +10,7 @@ locations <- fread("watershed_locations_feb2022.csv") %>% dplyr::rename(lieum = 
 pedigree <- fread("tout_balsac.csv") %>% left_join(locations, by ="lieum")
 pedigree$decade <- pedigree$datem - pedigree$datem %% 10
 # get individuals of interest
-list_of_parents <- pedigree %>% filter(ind %in% pedigree$mother | ind %in% pedigree$father)
+list_of_parents <- pedigree %>% filter(ind %in% pedigree$mother | ind %in% pedigree$father) %>% pull(ind)
 # get the family size of their ancestors (parents, grandparents and great-grandparents)
 relative_family_size <- get_relative_family_size(pedigree, list_of_parents)
 
